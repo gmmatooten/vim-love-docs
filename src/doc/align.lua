@@ -10,11 +10,21 @@ local function setDefaultWidth( n )
 	defaultWidth = n
 end
 
+-- Change the global tabWidth
+local function setTabWidth( n )
+	tabWidth = n
+end
+
+-- Set the tab string
+local function setTabStr( str )
+	tabStr = str
+end
+
 -- Add a new line
-local function newLine( currentLine, textWidth, determineSpacing )
+local function newLine( currentLine, fill, textWidth, determineSpacing )
 	if not currentLine:match( '^(%s*)$' ) then
 		-- Ignore blank lines/lines that consist solely of whitespace
-		return (' '):rep( determineSpacing( currentLine, textWidth ) ) .. currentLine .. '\n'
+		return fill:rep( determineSpacing( currentLine, textWidth ) ) .. currentLine .. '\n'
 	else
 		return ''
 	end
@@ -26,7 +36,8 @@ local function determineRightAlignSpacing( currentLine, textWidth )
 end
 
 -- Right-align text to a given width
-local function alignRight( text, textWidth )
+local function alignRight( text, fill, textWidth )
+	fill = fill or ' '
 	textWidth = textWidth or defaultWidth
 
 	-- currentLine is the line that will be added next
@@ -43,12 +54,17 @@ local function alignRight( text, textWidth )
 		-- Reset the current line
 		currentLine = ''
 
+		local first = true
+
 		-- Loop over words (separated by spaces)
-		-- Add space to beginning of line to make linebreaks easier to determine
+		-- Add space to beginning of line (instead of end) to make linebreaks easier to determine
 		line = ' ' .. line
 		line:gsub( '(%s+)(%S+)', function( spacing, word )
-			-- Remove any spaces at the start of currentLine
-			currentLine = currentLine:match( '^%s*(.*)$' )
+			-- Trim the space
+			if first then
+				spacing = spacing:match( '^%s(.*)$' )
+				first = false
+			end
 
 			if #currentLine + #spacing + #word <= textWidth then
 				-- Word is short enough
@@ -59,12 +75,12 @@ local function alignRight( text, textWidth )
 					while #word > textWidth do
 						-- Trim word
 						currentLine = word:sub( 1, textWidth - 1 ) .. '-'
-						output = output .. newLine( currentLine, textWidth, determineRightAlignSpacing )
+						output = output .. newLine( currentLine, fill, textWidth, determineRightAlignSpacing )
 						word = word:sub( textWidth )
 					end
 				else
 					-- word is short enough to not be hyphenated
-					output = output .. newLine( currentLine, textWidth, determineRightAlignSpacing )
+					output = output .. newLine( currentLine, fill, textWidth, determineRightAlignSpacing )
 				end
 
 				-- Update the current line
@@ -72,7 +88,7 @@ local function alignRight( text, textWidth )
 			end
 		end )
 
-		output = output .. newLine( currentLine, textWidth, determineRightAlignSpacing )
+		output = output .. newLine( currentLine, fill, textWidth, determineRightAlignSpacing )
 		currentLine = ''
 	end )
 
@@ -81,5 +97,8 @@ local function alignRight( text, textWidth )
 end
 
 return {
-	alignRight = alignRight,
+	setDefaultWidth = setDefaultWidth,
+	setTabWidth = setTabWidth,
+	setTabStr = setTabStr,
+	right = alignRight,
 }
