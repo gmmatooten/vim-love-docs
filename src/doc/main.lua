@@ -157,6 +157,34 @@ local function extractData( module, prefix, funcSeparator )
 		removeRefNumberSection()
 	end
 
+	-- Add enum information
+	if module.enums and #module.enums > 0 then
+		incrementRefNumber()
+
+		addSection( referenceNumber, 'enums', module.name .. '-enums' )
+		addRefNumberSection()
+
+		for _, moduleEnum in ipairs( module.enums ) do
+			extractData( moduleEnum, '', ':' )
+		end
+
+		removeRefNumberSection()
+	end
+
+	-- Add constants information
+	if module.constants and #module.constants > 0 then
+		incrementRefNumber()
+
+		addSection( referenceNumber, 'constants', module.name .. '-constants' )
+		addRefNumberSection()
+
+		for _, moduleConstants in ipairs( module.constants ) do
+			extractData( moduleConstants, module.name .. '-', '-' )
+		end
+
+		removeRefNumberSection()
+	end
+
 	-- Add function information
 	if module.functions and #module.functions > 0 then
 		incrementRefNumber()
@@ -164,8 +192,8 @@ local function extractData( module, prefix, funcSeparator )
 		addSection( referenceNumber, 'functions', module.name .. '-functions' )
 		addRefNumberSection()
 
-		for _, moduleType in ipairs( module.functions ) do
-			extractData( moduleType, prefix .. module.name .. funcSeparator, funcSeparator )
+		for _, moduleFunction in ipairs( module.functions ) do
+			extractData( moduleFunction, prefix .. module.name .. funcSeparator, funcSeparator )
 		end
 
 		removeRefNumberSection()
