@@ -54,6 +54,7 @@ local function alignRight( text, fill, textWidth )
 		-- Reset the current line
 		currentLine = ''
 
+		-- Used to trim the space added to the beginning of the line
 		local first = true
 
 		-- Loop over words (separated by spaces)
