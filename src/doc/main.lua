@@ -38,10 +38,6 @@ local tabStr = (' '):rep( tabWidth )
 -- Width of tags in the table of contents
 local tableOfContentsTagWidthLimit = 20
 
--- Width of listings in the TOC
--- (-3 is to give space between listing and reference)
-local tableOfContentsListingWidthLimit = lineWidth - tableOfContentsTagWidthLimit - #formatStringAsTag( '' ) - 3
-
 -- Give align module these changes
 align.setDefaultWidth( lineWidth )
 align.setTabWidth( tabWidth )
@@ -52,7 +48,7 @@ align.setTabStr( tabStr )
 -- Modularized {{{
 -- Increase the last digit of ref by one
 local function incrementReferenceNumber( ref )
-	base, tail = ref:match( '^(.-)(%d+)%.$' )
+	local base, tail = ref:match( '^(.-)(%d+)%.$' )
 	return base .. ( tonumber( tail ) + 1 ) .. '.'
 end
 
@@ -106,7 +102,7 @@ local function addSection( referenceNumber, name, tag )
 	local indentation = tabStr:rep( numberOfIndents )
 
 	-- Format tag to the specified length
-	tableOfContentsTag = abbreviateString( tag, tableOfContentsTagWidthLimit )
+	local tableOfContentsTag = abbreviateString( tag, tableOfContentsTagWidthLimit )
 
 	-- Space before is for padding
 	tableOfContentsTag = ' ' .. formatStringAsRef( tableOfContentsTag )
