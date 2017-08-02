@@ -132,6 +132,8 @@ end
 -- Declare extractData earlier, so that extractSubData can reference it
 local extractData
 
+-- Extract specific sub-elements of a module (sectionName), such as types/enums
+-- module, prefix, and funcSeparator all have the same meaning as with extractData
 local function extractSubData( module, sectionName, prefix, funcSeparator )
 	local section = module[sectionName]
 	if section and #section > 0 then
