@@ -31,7 +31,7 @@ local lineWidth = 79
 -- (8 spaces is too much, some content gets cut off)
 local tabWidth = 4
 
--- TODO: Handle containing tabs in text
+-- TODO: Handle using actual tabs (\t) in text
 -- (width calculation currently relies on the length of string, so spaces are required)
 local tabStr = (' '):rep( tabWidth )
 
@@ -42,7 +42,7 @@ local tableOfContentsTagWidthLimit = 20
 -- (-3 is to give space between listing and reference)
 local tableOfContentsListingWidthLimit = lineWidth - tableOfContentsTagWidthLimit - #formatStringAsTag( '' ) - 3
 
--- Give align these changes
+-- Give align module these changes
 align.setDefaultWidth( lineWidth )
 align.setTabWidth( tabWidth )
 align.setTabStr( tabStr )
@@ -66,6 +66,7 @@ local function removeReferenceNumberSection( ref )
 	return ref:match( '^(.-)%d+%.$' )
 end
 -- }}}
+
 -- Using referenceNumber {{{
 local referenceNumber = '0.'
 
@@ -84,7 +85,7 @@ end
 -- }}}
 
 -- Misc. utility functions {{{
--- Shorten a string if it is longer than width
+-- Shorten str if it is longer than width
 local function abbreviateString( str, width )
 	return #str < width and str or str:sub( 1, width - 1 ) .. '-'
 end
@@ -120,6 +121,7 @@ local function addSection( referenceNumber, name, tag )
 	tableOfContentsListing = tableOfContentsListing .. ' '
 
 	-- Right-align tag
+	-- (width includes #tableOfContentsListing to account for text already on the line)
 	local rightAlignedTag = align.right( tableOfContentsTag, '.', lineWidth - #tableOfContentsListing )
 
 	tableOfContentsListing = tableOfContentsListing .. rightAlignedTag
@@ -127,77 +129,53 @@ local function addSection( referenceNumber, name, tag )
 end
 -- }}}
 
--- Create a lookup table for tags
-local tags = {}
+-- Declare extractData earlier, so that extractSubData can reference it
+local extractData
+
+local function extractSubData( module, sectionName, prefix, funcSeparator )
+	local section = module[sectionName]
+	if section and #section > 0 then
+		incrementRefNumber()
+
+		addSection( referenceNumber, sectionName, module.name .. '-' .. sectionName )
+		addRefNumberSection()
+
+		for _, moduleSubData in ipairs( section ) do
+			extractData( moduleSubData, prefix, funcSeparator )
+		end
+
+		removeRefNumberSection()
+	end
+end
 
 -- Loop over modules
--- prefix is the name that prefaces tags
+-- module is the table containing the api data
+-- prefix is the name that prefaces tags (not including modulePrefix)
 -- funcSeparator specifies how to separate functions ('.', ':', etc.)
-local function extractData( module, prefix, funcSeparator )
+function extractData( module, prefix, funcSeparator )
+	-- Give parameters defaults
 	prefix = prefix or 'love.'
 	funcSeparator = funcSeparator or '.'
 
+	-- Increment reference and add section about the current module
 	incrementRefNumber()
 	addSection( referenceNumber, module.name, prefix .. module.name )
 
 	-- Extract data from module {{{
-	-- Add type information
+	-- Make a new section for sub-information (types, etc.)
 	addRefNumberSection()
 
-	if module.types and #module.types > 0 then
-		incrementRefNumber()
-
-		addSection( referenceNumber, 'types', module.name .. '-types' )
-		addRefNumberSection()
-
-		for _, moduleType in ipairs( module.types ) do
-			extractData( moduleType, '', ':' )
-		end
-
-		removeRefNumberSection()
-	end
+	-- Add type information
+	extractSubData( module, 'types', '', ':' )
 
 	-- Add enum information
-	if module.enums and #module.enums > 0 then
-		incrementRefNumber()
-
-		addSection( referenceNumber, 'enums', module.name .. '-enums' )
-		addRefNumberSection()
-
-		for _, moduleEnum in ipairs( module.enums ) do
-			extractData( moduleEnum, '', ':' )
-		end
-
-		removeRefNumberSection()
-	end
+	extractSubData( module, 'enums', '', ':' )
 
 	-- Add constants information
-	if module.constants and #module.constants > 0 then
-		incrementRefNumber()
-
-		addSection( referenceNumber, 'constants', module.name .. '-constants' )
-		addRefNumberSection()
-
-		for _, moduleConstants in ipairs( module.constants ) do
-			extractData( moduleConstants, module.name .. '-', '-' )
-		end
-
-		removeRefNumberSection()
-	end
+	extractSubData( module, 'constants', module.name .. '-', '-' )
 
 	-- Add function information
-	if module.functions and #module.functions > 0 then
-		incrementRefNumber()
-
-		addSection( referenceNumber, 'functions', module.name .. '-functions' )
-		addRefNumberSection()
-
-		for _, moduleFunction in ipairs( module.functions ) do
-			extractData( moduleFunction, prefix .. module.name .. funcSeparator, funcSeparator )
-		end
-
-		removeRefNumberSection()
-	end
+	extractSubData( module, 'functions', prefix .. module.name .. funcSeparator, funcSeparator )
 
 	removeRefNumberSection()
 	-- }}}
