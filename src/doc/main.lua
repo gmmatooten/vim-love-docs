@@ -91,6 +91,7 @@ end
 -- Keep track of all the tags used to find any matching text
 local tags = {}
 
+-- Stores the contents of the table of contents
 local tableOfContents = ''
 
 -- referenceNumber and name are used for the listing
