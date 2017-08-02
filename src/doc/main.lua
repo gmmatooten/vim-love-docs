@@ -171,14 +171,45 @@ function extractData( module, prefix, funcSeparator )
 	-- Add type information
 	extractSubData( module, 'types', '', ':' )
 
+	-- Supertypes
+	if module.supertypes and #module.supertypes > 0 then
+		incrementRefNumber()
+		addSection( referenceNumber, module.name .. '-supertypes', module.name .. '-supertypes' )
+	end
+
+	-- Subtypes
+	if module.subtypes and #module.subtypes > 0 then
+		incrementRefNumber()
+		addSection( referenceNumber, module.name .. '-subtypes', module.name .. '-subtypes' )
+	end
+
+	-- ParentType
+	if module.parenttype then
+		incrementRefNumber()
+		addSection( referenceNumber, module.name .. '-parenttype', module.name .. '-parenttype' )
+	end
+
+	-- Constructors
+	if module.constructors and #module.constructors > 0 then
+		incrementRefNumber()
+		addSection( referenceNumber, module.name .. '-constructors', module.name .. '-constructors' )
+	end
+
 	-- Add enum information
 	extractSubData( module, 'enums', '', ':' )
 
 	-- Add constants information
 	extractSubData( module, 'constants', module.name .. '-', '-' )
 
+	-- Add callback information
+	extractSubData( module, 'callbacks', prefix .. module.name .. funcSeparator, funcSeparator )
+
 	-- Add function information
 	extractSubData( module, 'functions', prefix .. module.name .. funcSeparator, funcSeparator )
+
+	-- description
+	-- variants
+	-- notes
 
 	removeRefNumberSection()
 	-- }}}
