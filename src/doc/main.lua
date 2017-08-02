@@ -88,12 +88,18 @@ end
 -- }}}
 
 -- Sections {{{
+-- Keep track of all the tags used to find any matching text
+local tags = {}
+
 local tableOfContents = ''
 
 -- referenceNumber and name are used for the listing
--- tag is the string used as the tag (NOT '|love-tag|', just 'tag')
+-- tag is the string used as the ref/tag (NOT '|love-tag|', just 'tag')
 local function addSection( referenceNumber, name, tag )
 	tag = tag or name
+
+	-- Use a hash to make looking up words easier, plus prevents duplicates
+	tags[tag] = true
 
 	-- Determine indentation level
 	local _, numberOfIndents = referenceNumber:gsub( '%.', '' )
