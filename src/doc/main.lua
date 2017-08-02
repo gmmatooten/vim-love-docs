@@ -88,8 +88,7 @@ end
 -- }}}
 
 -- Sections {{{
-local tableOfContents = {}
-local contents = {}
+local tableOfContents = ''
 
 -- referenceNumber and name are used for the listing
 -- tag is the string used as the tag (NOT '|love-tag|', just 'tag')
@@ -121,7 +120,7 @@ local function addSection( referenceNumber, name, tag )
 	local rightAlignedTag = align.right( tableOfContentsTag, '.', lineWidth - #tableOfContentsListing )
 
 	tableOfContentsListing = tableOfContentsListing .. rightAlignedTag
-	print( tableOfContentsListing )
+	tableOfContents = tableOfContents .. '\n' .. tableOfContentsListing
 end
 -- }}}
 
@@ -182,3 +181,5 @@ end
 for _, module in ipairs( api.modules ) do
 	extractData( module )
 end
+
+print( tableOfContents )
