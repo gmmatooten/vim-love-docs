@@ -168,7 +168,7 @@ function extractData( module, prefix, funcSeparator )
 	-- Make a new section for sub-information (types, etc.)
 	addRefNumberSection()
 
-	-- Add type information
+	-- Types
 	extractSubData( module, 'types', '', ':' )
 
 	-- Supertypes
@@ -195,21 +195,21 @@ function extractData( module, prefix, funcSeparator )
 		addSection( referenceNumber, module.name .. '-constructors', module.name .. '-constructors' )
 	end
 
-	-- Add enum information
+	-- Enums
 	extractSubData( module, 'enums', '', ':' )
 
-	-- Add constants information
+	-- Constants
 	extractSubData( module, 'constants', module.name .. '-', '-' )
 
-	-- Add callback information
+	-- Callbacks
 	extractSubData( module, 'callbacks', prefix .. module.name .. funcSeparator, funcSeparator )
 
-	-- Add function information
+	-- Functions
 	extractSubData( module, 'functions', prefix .. module.name .. funcSeparator, funcSeparator )
 
-	-- description
-	-- variants
-	-- notes
+	-- Description
+	-- Variants
+	-- Notes
 
 	removeRefNumberSection()
 	-- }}}
