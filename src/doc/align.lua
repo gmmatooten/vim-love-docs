@@ -30,71 +30,94 @@ local function newLine( currentLine, fill, textWidth, determineSpacing )
 	end
 end
 
--- Determine the number of spaces required to align currentLine
+-- Determine the number of spaces required to right-align currentLine
 local function determineRightAlignSpacing( currentLine, textWidth )
 	return textWidth - #currentLine
 end
 
+-- Loop over words (separated by spaces)
+-- Add space to beginning of line (instead of end) to make linebreaks easier to determine
+local function loopOverTextByWord( line, fill, textWidth, spacingFunc )
+	-- Loop over words (separated by spaces)
+	-- Add space to beginning of line (instead of end) to make linebreaks easier to determine
+	line = ' ' .. line
+
+	-- Used to trim the space added to the beginning of the line
+	local first = true
+
+	-- Current line is the line on which the function is currently working
+	-- output is the string returned by the function
+	local currentLine, output = '', ''
+
+	line:gsub( '(%s+)(%S+)', function( spacing, word )
+		-- Trim the space
+		if first then
+			spacing = spacing:match( '^%s(.*)$' )
+			first = false
+		end
+
+		if #currentLine + #spacing + #word <= textWidth then
+			-- Word is short enough
+			currentLine = currentLine .. spacing .. word
+		else
+			-- Line needs to be wrapped
+			if #currentLine == 0 then
+				-- If currentLine is blank and it's too long, hyphenate it
+				while #word > textWidth do
+					currentLine = word:sub( 1, textWidth - 1 ) .. '-'
+					output = output .. newLine( currentLine, fill, textWidth, spacingFunc )
+					word = word:sub( textWidth )
+				end
+			else
+				-- word is short enough to not be hyphenated
+				output = output .. newLine( currentLine, fill, textWidth, spacingFunc )
+			end
+
+			-- Update the current line
+			currentLine = word
+		end
+	end )
+
+	-- Add any non-wrapped content to the output and return it
+	output = output .. newLine( currentLine, fill, textWidth, spacingFunc )
+	return output
+end
+
+-- Loop over the string by lines to respect new lines
+local function loopOverTextByLine( text, fill, textWidth, spacingFunc )
+	-- Add a new line to text to handle all cases (removed later)
+	text = text .. '\n'
+
+	local output = ''
+	text:gsub( '(.-)\n', function( line )
+		output = output .. loopOverTextByWord( line, fill, textWidth, spacingFunc )
+	end )
+
+	-- Trim the last new line, which was only added for easier looping
+	return output:match( '^(.-)\n$' )
+end
+
 -- Right-align text to a given width
+
+-- TODO: allow multi-character fill
+-- fill is what to use to pad the width of the text (must be one character)
 local function alignRight( text, fill, textWidth )
 	fill = fill or ' '
 	textWidth = textWidth or defaultWidth
 
-	-- currentLine is the line that will be added next
-	-- output is the entire wrapped message
-	local currentLine, output = '', ''
+	return loopOverTextByLine( text, fill, textWidth, determineRightAlignSpacing )
+end
 
-	-- Replace tabs to account for their width appropriately
-	text = text:gsub( '\t', tabStr )
+-- left-align text to a given width
+local function alignLeft( text, indentStr, textWidth )
+	indentStr = indent or ''
 
-	-- Respect newlines. To do this, loop over by lines.
-	-- Add a new line to text to handle all cases (removed later)
-	text = text .. '\n'
-	text:gsub( '(.-)\n', function( line )
-		-- Reset the current line
-		currentLine = ''
+	-- Account for indentStr in text wrapping
+	textWidth = ( textWidth or defaultWidth ) - #indentStr
 
-		-- Used to trim the space added to the beginning of the line
-		local first = true
-
-		-- Loop over words (separated by spaces)
-		-- Add space to beginning of line (instead of end) to make linebreaks easier to determine
-		line = ' ' .. line
-		line:gsub( '(%s+)(%S+)', function( spacing, word )
-			-- Trim the space
-			if first then
-				spacing = spacing:match( '^%s(.*)$' )
-				first = false
-			end
-
-			if #currentLine + #spacing + #word <= textWidth then
-				-- Word is short enough
-				currentLine = currentLine .. spacing .. word
-			else
-				if #currentLine == 0 then
-					-- If currentLine is blank and it's too long, hyphenate it
-					while #word > textWidth do
-						-- Trim word
-						currentLine = word:sub( 1, textWidth - 1 ) .. '-'
-						output = output .. newLine( currentLine, fill, textWidth, determineRightAlignSpacing )
-						word = word:sub( textWidth )
-					end
-				else
-					-- word is short enough to not be hyphenated
-					output = output .. newLine( currentLine, fill, textWidth, determineRightAlignSpacing )
-				end
-
-				-- Update the current line
-				currentLine = word
-			end
-		end )
-
-		output = output .. newLine( currentLine, fill, textWidth, determineRightAlignSpacing )
-		currentLine = ''
+	return loopOverTextByLine( text, indentStr, textWidth, function()
+		return 1
 	end )
-
-	-- Remove new line added earlier
-	return output:match( '^(.-)\n$' )
 end
 
 return {
@@ -102,4 +125,5 @@ return {
 	setTabWidth = setTabWidth,
 	setTabStr = setTabStr,
 	right = alignRight,
+	left = alignLeft,
 }
