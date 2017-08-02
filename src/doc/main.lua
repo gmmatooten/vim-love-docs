@@ -139,11 +139,12 @@ local extractData
 local function extractSubData( module, sectionName, prefix, funcSeparator )
 	local section = module[sectionName]
 	if section and #section > 0 then
+		-- Update reference number and add new subsection
 		incrementRefNumber()
-
 		addSection( referenceNumber, sectionName, module.name .. '-' .. sectionName )
 		addRefNumberSection()
 
+		-- Loop over information in section
 		for _, moduleSubData in ipairs( section ) do
 			extractData( moduleSubData, prefix, funcSeparator )
 		end
