@@ -110,14 +110,18 @@ local tags = {}
 -- Stores the contents of the table of contents
 local tableOfContents = ''
 
+-- Stores the contents of as a table (can't use a string; not enough memory)
+local contents = {}
+
 -- referenceNumber and name are used for the listing
 -- tag is the string used as the ref/tag (NOT '|love-tag|', just 'tag')
-local function addSection( referenceNumber, name, tag )
+local function addSection( referenceNumber, module, name, tag )
 	tag = tag or name
 
 	-- Use a hash to make looking up words easier, plus prevents duplicates
 	tags[tag] = true
 
+	-- Table of contents {{{
 	-- Determine indentation level
 	local _, numberOfIndents = referenceNumber:gsub( '%.', '' )
 	numberOfIndents = numberOfIndents - 1
@@ -130,7 +134,8 @@ local function addSection( referenceNumber, name, tag )
 	tableOfContentsTag = ' ' .. formatStringAsRef( tableOfContentsTag )
 
 	-- Shorten listing if it's too long
-	local tableOfContentsListing = indentation .. referenceNumber .. ' ' .. name
+	local listingNumberAndName = referenceNumber .. ' ' .. name
+	local tableOfContentsListing = indentation .. listingNumberAndName
 	-- (-2 is for space and period for separation)
 	local widthLimit = lineWidth - #tableOfContentsTag - 2
 	tableOfContentsListing = abbreviateString( tableOfContentsListing, widthLimit )
@@ -144,6 +149,39 @@ local function addSection( referenceNumber, name, tag )
 
 	tableOfContentsListing = tableOfContentsListing .. rightAlignedTag
 	tableOfContents = tableOfContents .. '\n' .. tableOfContentsListing
+	-- }}}
+
+	-- Contents {{{
+	local currentContent = ''
+	if numberOfIndents == 0 then
+		currentContent = currentContent .. ('='):rep( lineWidth )
+	else
+		currentContent = currentContent .. ('-'):rep( lineWidth )
+	end
+
+	currentContent = currentContent .. '\n' .. align.right( abbreviateString(
+		formatStringAsTag( tag ), lineWidth ), ' '
+	) .. '\n' .. listingNumberAndName .. '\n\n'
+
+	-- Description
+	.. align.left( module.description or '', 0 ) .. '\n'
+	-- Types
+	.. ( module.types and #module.types > 0 and '!!!!!types\n' or '' )
+	-- Supertypes
+	-- Subtypes
+	-- ParentType
+	-- Constructors
+	-- Enums
+	-- Constants
+	-- Callbacks
+	-- Functions
+
+	-- Variants
+	-- Notes
+
+	-- Add currentContents to content
+	table.insert( contents, currentContent )
+	-- }}}
 end
 -- }}}
 
@@ -155,10 +193,12 @@ local extractData
 -- module, prefix, and funcSeparator all have the same meaning as with extractData
 local function extractSubData( module, sectionName, prefix, funcSeparator )
 	local section = module[sectionName]
+
 	if section and #section > 0 then
+
 		-- Update reference number and add new subsection
 		incrementRefNumber()
-		addSection( referenceNumber, sectionName, module.name .. '-' .. sectionName )
+		addSection( referenceNumber, section, sectionName, module.name .. '-' .. sectionName )
 		addRefNumberSection()
 
 		-- Loop over information in section
@@ -181,7 +221,7 @@ function extractData( module, prefix, funcSeparator )
 
 	-- Increment reference and add section about the current module
 	incrementRefNumber()
-	addSection( referenceNumber, module.name, prefix .. module.name )
+	addSection( referenceNumber, module, module.name, prefix .. module.name )
 
 	-- Extract data from module {{{
 	-- Make a new section for sub-information (types, etc.)
@@ -193,25 +233,25 @@ function extractData( module, prefix, funcSeparator )
 	-- Supertypes
 	if module.supertypes and #module.supertypes > 0 then
 		incrementRefNumber()
-		addSection( referenceNumber, module.name .. '-supertypes', module.name .. '-supertypes' )
+		addSection( referenceNumber, module.supertypes, module.name .. '-supertypes', module.name .. '-supertypes' )
 	end
 
 	-- Subtypes
 	if module.subtypes and #module.subtypes > 0 then
 		incrementRefNumber()
-		addSection( referenceNumber, module.name .. '-subtypes', module.name .. '-subtypes' )
+		addSection( referenceNumber, module.subtypes, module.name .. '-subtypes', module.name .. '-subtypes' )
 	end
 
 	-- ParentType
 	if module.parenttype then
 		incrementRefNumber()
-		addSection( referenceNumber, module.name .. '-parenttype', module.name .. '-parenttype' )
+		addSection( referenceNumber, module.parenttype, module.name .. '-parenttype', module.name .. '-parenttype' )
 	end
 
 	-- Constructors
 	if module.constructors and #module.constructors > 0 then
 		incrementRefNumber()
-		addSection( referenceNumber, module.name .. '-constructors', module.name .. '-constructors' )
+		addSection( referenceNumber, module.constructors, module.name .. '-constructors', module.name .. '-constructors' )
 	end
 
 	-- Enums
@@ -226,10 +266,6 @@ function extractData( module, prefix, funcSeparator )
 	-- Functions
 	extractSubData( module, 'functions', prefix .. module.name .. funcSeparator, funcSeparator )
 
-	-- Description
-	-- Variants
-	-- Notes
-
 	removeRefNumberSection()
 	-- }}}
 end
@@ -241,5 +277,6 @@ for _, module in ipairs( api.modules ) do
 end
 
 print( header )
-print( tableOfContents )
+print( tableOfContents .. '\n' )
+print( table.concat( contents, '\n' ) )
 -- }}}
