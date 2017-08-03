@@ -131,6 +131,7 @@ local function addSection( referenceNumber, name, tag )
 end
 -- }}}
 
+-- Extract data and subdata {{{
 -- Declare extractData earlier, so that extractSubData can reference it
 local extractData
 
@@ -216,9 +217,12 @@ function extractData( module, prefix, funcSeparator )
 	removeRefNumberSection()
 	-- }}}
 end
+-- }}}
 
+-- Output the documentation {{{
 for _, module in ipairs( api.modules ) do
 	extractData( module )
 end
 
 print( tableOfContents )
+-- }}}
