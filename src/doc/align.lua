@@ -22,12 +22,8 @@ end
 
 -- Add a new line
 local function newLine( currentLine, fill, textWidth, determineSpacing )
-	if not currentLine:match( '^(%s*)$' ) then
-		-- Ignore blank lines/lines that consist solely of whitespace
-		return fill:rep( determineSpacing( currentLine, textWidth ) ) .. currentLine .. '\n'
-	else
-		return ''
-	end
+	-- Ignore blank lines/lines that consist solely of whitespace
+	return fill:rep( determineSpacing( currentLine, textWidth ) ) .. currentLine .. '\n'
 end
 
 -- Determine the number of spaces required to right-align currentLine
