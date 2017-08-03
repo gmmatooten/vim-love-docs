@@ -44,6 +44,22 @@ align.setTabWidth( tabWidth )
 align.setTabStr( tabStr )
 -- }}}
 
+-- Header {{{
+local header = [[
+*love.txt* *love2d*                  Documentation for the LOVE game framework.
+
+                         _       o__o __      __ ______ ~
+                        | |     / __ \\ \    / //  ____\~
+                        | |    | |  | |\ \  / / | |__   ~
+                        | |    | |  | | \ \/ /  |  __|  ~
+                        | |____| |__| |  \  /   | |____ ~
+                        \______|\____/    \/    \______/~
+
+                    The complete solution for Vim with LOVE.
+                    Includes highlighting and documentation.
+]]
+-- }}}
+
 -- Reference number {{{
 -- Modularized {{{
 -- Increase the last digit of ref by one
@@ -224,5 +240,6 @@ for _, module in ipairs( api.modules ) do
 	extractData( module )
 end
 
+print( header )
 print( tableOfContents )
 -- }}}
