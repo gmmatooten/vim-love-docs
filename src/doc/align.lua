@@ -106,7 +106,7 @@ end
 
 -- left-align text to a given width
 local function alignLeft( text, indentStr, textWidth )
-	indentStr = indent or ''
+	indentStr = indentStr or ''
 
 	-- Account for indentStr in text wrapping
 	textWidth = ( textWidth or defaultWidth ) - #indentStr
