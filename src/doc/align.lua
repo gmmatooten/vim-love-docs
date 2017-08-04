@@ -105,14 +105,17 @@ local function alignRight( text, fill, textWidth )
 end
 
 -- left-align text to a given width
-local function alignLeft( text, indentStr, textWidth )
+local function alignLeft( text, indentStr, textWidth, indentFirstLine )
 	indentStr = indentStr or ''
+	indentFirstLine = indentFirstLine or false
 
 	-- Account for indentStr in text wrapping
 	textWidth = ( textWidth or defaultWidth ) - #indentStr
 
 	return loopOverTextByLine( text, indentStr, textWidth, function()
-		return 1
+		local result = indentFirstLine and 0 or 1
+		indentFirstLine = false
+		return result
 	end )
 end
 
