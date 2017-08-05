@@ -22,8 +22,14 @@ end
 
 -- Add a new line
 local function newLine( currentLine, fill, textWidth, determineSpacing )
+	local returnString = ''
+
 	-- Ignore blank lines/lines that consist solely of whitespace
-	return fill:rep( determineSpacing( currentLine, textWidth ) ) .. currentLine .. '\n'
+	if #currentLine > 0 then
+		returnString = fill:rep( determineSpacing( currentLine, textWidth ) ) .. currentLine
+	end
+
+	return returnString .. '\n'
 end
 
 -- Determine the number of spaces required to right-align currentLine
