@@ -157,7 +157,8 @@ local function getFunctionOverview( func, parentName )
 				table.insert( names, ret.name )
 
 				returnValuesExtendedString = returnValuesExtendedString
-				.. ret.name .. ': <' .. ret.type .. '>' .. '\n\n' .. ret.description .. '\n\n'
+				.. tabString:rep( 2 ) .. ret.name .. ': <' .. ret.type .. '>' .. '\n\n'
+				.. align.left( ret.description, tabString:rep( 3 ) ) .. '\n\n'
 			end
 
 			returnValuesString = table.concat( names, ', ' ) .. ' = '
@@ -170,7 +171,7 @@ local function getFunctionOverview( func, parentName )
 		local variantSynopsis = returnValuesString .. functionNameRef .. parametersString
 		returnString = returnString .. align.left( variantSynopsis, indentString ) .. '\n\n'
 		.. tabString .. 'Return Values:\n\n'
-		.. align.left( returnValuesExtendedString, tabString:rep( 2 ) ) .. '\n'
+		.. returnValuesExtendedString .. '\n'
 	end
 
 	return returnString
