@@ -168,8 +168,8 @@ local function getFunctionOverview( func, parentName )
 		local functionNameRef = '|' .. parentName .. func.name .. '|'
 
 		-- Put it all together
-		local variantSynopsis = tabString .. returnValuesString .. functionNameRef .. parametersString
-		returnString = returnString .. align.left( variantSynopsis, indentString ) .. '\n\n'
+		local variantSynopsis = returnValuesString .. functionNameRef .. parametersString
+		returnString = returnString .. align.left( variantSynopsis, indentString .. tabString ) .. '\n\n'
 		.. tabString:rep( 2 ) .. 'Return Values:\n\n'
 		.. returnValuesExtendedString .. '\n'
 	end
