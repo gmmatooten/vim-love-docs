@@ -146,7 +146,7 @@ local function getFunctionOverview( func, parentName )
 
 		-- Return values
 		local returnValuesString = ''
-		local returnValuesExtendedString = tabString:rep( 2 ) .. 'None'
+		local returnValuesExtendedString = tabString:rep( 3 ) .. 'None'
 
 		if variant.returns and #variant.returns > 0 then
 			local names = {}
@@ -157,8 +157,8 @@ local function getFunctionOverview( func, parentName )
 				table.insert( names, ret.name )
 
 				returnValuesExtendedString = returnValuesExtendedString
-				.. tabString:rep( 2 ) .. ret.name .. ': <' .. ret.type .. '>' .. '\n\n'
-				.. align.left( ret.description, tabString:rep( 3 ) ) .. '\n\n'
+				.. tabString:rep( 3 ) .. ret.name .. ': <' .. ret.type .. '>' .. '\n\n'
+				.. align.left( ret.description, tabString:rep( 4 ) ) .. '\n\n'
 			end
 
 			returnValuesString = table.concat( names, ', ' ) .. ' = '
@@ -168,9 +168,9 @@ local function getFunctionOverview( func, parentName )
 		local functionNameRef = '|' .. parentName .. func.name .. '|'
 
 		-- Put it all together
-		local variantSynopsis = returnValuesString .. functionNameRef .. parametersString
+		local variantSynopsis = tabString .. returnValuesString .. functionNameRef .. parametersString
 		returnString = returnString .. align.left( variantSynopsis, indentString ) .. '\n\n'
-		.. tabString .. 'Return Values:\n\n'
+		.. tabString:rep( 2 ) .. 'Return Values:\n\n'
 		.. returnValuesExtendedString .. '\n'
 	end
 
