@@ -38,6 +38,9 @@ local tabString = (' '):rep( tabWidth )
 -- Width of tags in the table of contents
 local tableOfContentsTagWidthLimit = 20
 
+-- Fallback for if a variant has no description
+local defaultFunctionVariantDescription = 'See function description.'
+
 -- Give align module these changes
 align.setDefaultWidth( lineWidth )
 align.setTabWidth( tabWidth )
@@ -102,6 +105,76 @@ local function removeRefNumberSection()
 end
 -- }}}
 -- }}}
+
+-- Gets the overview of a function, including its tag, name, description, and variants
+local function getFunctionOverview( func, parentName )
+	-- Include tag, name, reference number, and description
+	local returnString = align.right( formatStringAsTag( parentName .. func.name ) ) .. '\n'
+	.. referenceNumber .. ' ' .. func.name .. '\n\n'
+	.. align.left( func.description ) .. '\n\n'
+	.. 'Variants:\n'
+
+	-- Include variants
+	for variantIndex, variant in ipairs( func.variants ) do
+		-- Give a default description if one is not present
+		local variantDescription = variant.description or defaultFunctionVariantDescription
+
+		-- Include its index
+		local currentFunc = tabString .. variantIndex .. '.'
+
+		-- Align all descriptions to start at the same point
+		currentFunc = currentFunc .. (' '):rep( 2 * tabWidth - #currentFunc )
+
+		-- Include variant descriptions
+		local indentString = (' '):rep( #currentFunc )
+		currentFunc = currentFunc .. align.left( variantDescription, indentString, nil, true )
+		returnString = returnString .. '\n' .. currentFunc .. '\n\n'
+
+		-- Parameters
+		local parametersString = '()'
+		local parametersExtendedString = 'None'
+
+		if variant.arguments and #variant.arguments > 0 then
+			local names = {}
+
+			for _, param in ipairs( variant.arguments ) do
+				table.insert( names, param.name )
+			end
+
+			parametersString = '( ' .. table.concat( names, ', ' ) .. ' )'
+		end
+
+		-- Return values
+		local returnValuesString = ''
+		local returnValuesExtendedString = tabString:rep( 2 ) .. 'None'
+
+		if variant.returns and #variant.returns > 0 then
+			local names = {}
+
+			returnValuesExtendedString = ''
+
+			for _, ret in ipairs( variant.returns ) do
+				table.insert( names, ret.name )
+
+				returnValuesExtendedString = returnValuesExtendedString
+				.. ret.name .. ': <' .. ret.type .. '>' .. '\n\n' .. ret.description .. '\n\n'
+			end
+
+			returnValuesString = table.concat( names, ', ' ) .. ' = '
+		end
+
+		-- Function name
+		local functionNameRef = '|' .. parentName .. func.name .. '|'
+
+		-- Put it all together
+		local variantSynopsis = returnValuesString .. functionNameRef .. parametersString
+		returnString = returnString .. align.left( variantSynopsis, indentString ) .. '\n\n'
+		.. tabString .. 'Return Values:\n\n'
+		.. align.left( returnValuesExtendedString, tabString:rep( 2 ) ) .. '\n'
+	end
+
+	return returnString
+end
 
 -- Gets the aspects of module[attribute] as a string
 -- module is the table containing the module's information
@@ -197,6 +270,17 @@ for _, module in ipairs( api.modules ) do
 
 	incrementRefNumber()
 	print( getAttributeInformation( module, 'functions', parentName .. '.', parentName  ) )
+
+	if module.functions then
+		addRefNumberSection()
+
+		for _, func in ipairs( module.functions ) do
+			incrementRefNumber()
+			print( getFunctionOverview( func, parentName .. '.' ) )
+		end
+
+		removeRefNumberSection()
+	end
 
 	removeRefNumberSection()
 end
