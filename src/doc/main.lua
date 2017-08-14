@@ -132,13 +132,19 @@ local function getFunctionOverview( func, parentName )
 
 		-- Parameters
 		local parametersString = '()'
-		local parametersExtendedString = 'None'
+		local parametersExtendedString = tabString:rep( 3 ) .. 'None\n\n'
 
 		if variant.arguments and #variant.arguments > 0 then
 			local names = {}
 
+			parametersExtendedString = ''
+
 			for _, param in ipairs( variant.arguments ) do
 				table.insert( names, param.name )
+
+				parametersExtendedString = parametersExtendedString
+				.. tabString:rep( 3 ) .. param.name .. ': <' .. param.type .. '>\n\n'
+				.. align.left( param.description, tabString:rep( 4 ) ) .. '\n\n'
 			end
 
 			parametersString = '( ' .. table.concat( names, ', ' ) .. ' )'
@@ -146,7 +152,7 @@ local function getFunctionOverview( func, parentName )
 
 		-- Return values
 		local returnValuesString = ''
-		local returnValuesExtendedString = tabString:rep( 3 ) .. 'None'
+		local returnValuesExtendedString = tabString:rep( 3 ) .. 'None\n\n'
 
 		if variant.returns and #variant.returns > 0 then
 			local names = {}
@@ -157,7 +163,7 @@ local function getFunctionOverview( func, parentName )
 				table.insert( names, ret.name )
 
 				returnValuesExtendedString = returnValuesExtendedString
-				.. tabString:rep( 3 ) .. ret.name .. ': <' .. ret.type .. '>' .. '\n\n'
+				.. tabString:rep( 3 ) .. ret.name .. ': <' .. ret.type .. '>\n\n'
 				.. align.left( ret.description, tabString:rep( 4 ) ) .. '\n\n'
 			end
 
@@ -170,8 +176,10 @@ local function getFunctionOverview( func, parentName )
 		-- Put it all together
 		local variantSynopsis = returnValuesString .. functionNameRef .. parametersString
 		returnString = returnString .. align.left( variantSynopsis, indentString .. tabString ) .. '\n\n'
+		.. tabString:rep( 2 ) .. 'Parameters:\n\n'
+		.. parametersExtendedString
 		.. tabString:rep( 2 ) .. 'Return Values:\n\n'
-		.. returnValuesExtendedString .. '\n'
+		.. returnValuesExtendedString:match( '^(.*)\n$' )
 	end
 
 	return returnString
